@@ -1,0 +1,60 @@
+name: Build Borderless-Gaming
+
+on:
+  push:
+    branches:
+      - main  # 当 push 到 main 分支时触发
+  pull_request:
+    branches:
+      - main  # 处理 PR 时触发
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    runs-on: windows-latest  # 使用最新的 Windows 环境，包含 VS2022 和 .NET 8 SDK
+
+    steps:
+      # 检出代码
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      # 设置 .NET 8 环境
+      - name: 设置 .NET 8 环境
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      # 列出目录文件，确保 .sln 文件存在
+      - name: 列出代码目录文件
+        run: dir
+        shell: cmd
+
+      # 还原 NuGet 依赖
+      - name: 还原 NuGet 依赖
+        run: dotnet restore BorderlessGaming.sln  # 使用正确的 .sln 文件名
+
+      # 编译项目
+      - name: 编译项目
+        run: dotnet build BorderlessGaming.sln --configuration Release --no-restore  # 使用 dotnet build
+
+      # 打包并复制可执行文件
+      - name: 打包可执行文件
+        run: |
+          mkdir artifact
+          copy BorderlessGaming\bin\Release\net8.0-windows\* artifact\
+        shell: cmd
+
+      # 上传编译产物
+      - name: 上传编译产物
+        uses: actions/upload-artifact@v3
+        with:
+          name: BorderlessGaming
+          path: artifact/
+
+      # 发布 Release
+      - name: 发布 Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifact/BorderlessGaming.exe  # 将编译好的文件发布为 Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub 自动生成的 Token 用于发布
