@@ -16,11 +16,11 @@ jobs:
     steps:
       # 检出代码
       - name: 检出代码
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # 设置 .NET 8 环境
       - name: 设置 .NET 8 环境
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
